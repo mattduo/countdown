@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Countdown to July 27 (AEST)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #1e293b;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .time {
+      font-size: 2rem;
+      margin: 10px 0;
+    }
+    .label {
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Countdown to July 27 (AEST)</h1>
+    <div class="time" id="days"></div>
+    <div class="label">Days</div>
+    <div class="time" id="hours"></div>
+    <div class="label">Hours</div>
+    <div class="time" id="minutes"></div>
+    <div class="label">Minutes</div>
+    <div class="time" id="seconds"></div>
+    <div class="label">Seconds</div>
+  </div>
+
+  <script>
+    function getAESTTargetDate() {
+      const now = new Date();
+
+      // Target: July 27, current year at 00:00 AEST (UTC+10)
+      const year = now.getFullYear();
+
+      // Create target in UTC first (AEST = UTC+10)
+      const targetUTC = Date.UTC(year, 6, 26, 14, 0, 0); 
+      // July = month 6 (0-based), minus 10 hours → 14:00 previous day UTC
+
+      let targetDate = new Date(targetUTC);
+
+      // If already passed, use next year
+      if (now > targetDate) {
+        const nextUTC = Date.UTC(year + 1, 6, 26, 14, 0, 0);
+        targetDate = new Date(nextUTC);
+      }
+
+      return targetDate;
+    }
+
+    const targetDate = getAESTTargetDate();
+
+    function updateCountdown() {
+      const now = new Date();
+      const diff = targetDate - now;
+
+      if (diff <= 0) {
+        document.body.innerHTML = "<h1>🎉 It's July 27 (AEST)!</h1>";
+        return;
+      }
+
+      const seconds = Math.floor(diff / 1000) % 60;
+      const minutes = Math.floor(diff / (1000 * 60)) % 60;
+      const hours = Math.floor(diff / (1000 * 60 * 60)) % 24;
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+      document.getElementById("days").textContent = days;
+      document.getElementById("hours").textContent = hours;
+      document.getElementById("minutes").textContent = minutes;
+      document.getElementById("seconds").textContent = seconds;
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+  </script>
+</body>
+</html>
