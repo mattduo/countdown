@@ -2,101 +2,115 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GSXR600 Countdown Dash</title>
+<title>GSXR600 Dash</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
 
 <style>
 body {
   margin: 0;
-  background: radial-gradient(circle, #000 40%, #050505);
+  background: radial-gradient(circle at center, #000 30%, #020202 100%);
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
   font-family: 'Orbitron', sans-serif;
-  color: white;
 }
 
-/* Container */
+/* DASH BODY */
 .dash {
-  width: 420px;
-  height: 260px;
-  background: #0a0a0a;
-  border-radius: 20px;
-  box-shadow: 0 0 40px #000, inset 0 0 30px #111;
-  padding: 20px;
+  width: 460px;
+  height: 280px;
+  background: linear-gradient(145deg, #0a0a0a, #050505);
+  border-radius: 25px;
+  box-shadow:
+    0 0 60px rgba(0,0,0,0.9),
+    inset 0 0 40px rgba(255,255,255,0.03);
   position: relative;
+  overflow: hidden;
+}
+
+/* Glass reflection */
+.dash::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -20%;
+  width: 140%;
+  height: 200%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.05), transparent);
+  transform: rotate(25deg);
 }
 
 /* Title */
 .title {
   text-align: center;
-  color: #ccc;
-  font-size: 0.9rem;
-  margin-bottom: 10px;
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 8px;
 }
 
-/* SVG tachometer */
+/* SVG */
 svg {
   width: 100%;
-  height: 180px;
+  height: 170px;
 }
 
 /* Needle */
 .needle {
   position: absolute;
   width: 3px;
-  height: 100px;
-  background: #ff2a2a;
-  top: 65px;
+  height: 110px;
+  background: linear-gradient(#ff3b3b, #ff0000);
+  top: 70px;
   left: 50%;
   transform-origin: bottom center;
-  transform: rotate(-90deg);
-  box-shadow: 0 0 10px #ff2a2a;
-  transition: transform 0.3s ease-out;
+  transform: rotate(-100deg);
+  box-shadow: 0 0 15px #ff0000;
+  transition: transform 0.15s ease-out;
 }
 
-/* Center hub */
+/* Hub */
 .hub {
   position: absolute;
-  width: 10px;
-  height: 10px;
-  background: white;
+  width: 12px;
+  height: 12px;
+  background: #ddd;
   border-radius: 50%;
-  top: 150px;
+  top: 160px;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 
-/* LCD Display */
+/* LCD */
 .lcd {
   position: absolute;
   bottom: 15px;
   left: 15px;
   right: 15px;
-  height: 60px;
-  background: #cfd8dc;
-  color: black;
-  border-radius: 8px;
+  height: 70px;
+  background: linear-gradient(#dfe6e9, #b2bec3);
+  border-radius: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  font-family: monospace;
+  padding: 12px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
 }
 
 /* Gear */
 .gear {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: bold;
+  color: #111;
 }
 
 /* Time */
 .time {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   text-align: right;
-  line-height: 1.2rem;
+  color: #111;
+  line-height: 1.3rem;
 }
 </style>
 </head>
@@ -104,28 +118,32 @@ svg {
 <body>
 
 <div class="dash">
-  <div class="title">SUZUKI GSX-R600 STYLE COUNTDOWN</div>
+  <div class="title">xd</div>
 
   <svg viewBox="0 0 300 150">
-    <!-- Background arc -->
+    <!-- Background -->
     <path d="M20 140 A130 130 0 0 1 280 140"
-      stroke="#222" stroke-width="10" fill="none"/>
+      stroke="#111" stroke-width="12" fill="none"/>
+
+    <!-- Glow arc -->
+    <path id="progress"
+      d="M20 140 A130 130 0 0 1 280 140"
+      stroke="#00ffc3"
+      stroke-width="8"
+      fill="none"
+      stroke-dasharray="408"
+      stroke-dashoffset="408"
+      style="filter: drop-shadow(0 0 6px #00ffc3)"/>
+
+    <!-- Redline -->
+    <path d="M210 50 A130 130 0 0 1 280 140"
+      stroke="#ff1a1a"
+      stroke-width="12"
+      fill="none"
+      style="filter: drop-shadow(0 0 6px red)"/>
 
     <!-- Tick marks -->
     <g id="ticks"></g>
-
-    <!-- Redline -->
-    <path d="M200 40 A130 130 0 0 1 280 140"
-      stroke="#ff2a2a" stroke-width="10" fill="none"/>
-
-    <!-- Progress -->
-    <path id="progress"
-      d="M20 140 A130 130 0 0 1 280 140"
-      stroke="#00ffcc"
-      stroke-width="6"
-      fill="none"
-      stroke-dasharray="408"
-      stroke-dashoffset="408"/>
   </svg>
 
   <div class="needle" id="needle"></div>
@@ -138,14 +156,14 @@ svg {
 </div>
 
 <script>
-// Create tick marks
-const tickGroup = document.getElementById("ticks");
-for (let i = 0; i <= 10; i++) {
-  const angle = -90 + (i * 180 / 10);
+// Tick marks
+const ticks = document.getElementById("ticks");
+for (let i = 0; i <= 12; i++) {
+  const angle = -100 + (i * 200 / 12);
   const rad = angle * Math.PI / 180;
 
-  const x1 = 150 + Math.cos(rad) * 110;
-  const y1 = 140 + Math.sin(rad) * 110;
+  const x1 = 150 + Math.cos(rad) * 105;
+  const y1 = 140 + Math.sin(rad) * 105;
   const x2 = 150 + Math.cos(rad) * 125;
   const y2 = 140 + Math.sin(rad) * 125;
 
@@ -154,68 +172,71 @@ for (let i = 0; i <= 10; i++) {
   line.setAttribute("y1", y1);
   line.setAttribute("x2", x2);
   line.setAttribute("y2", y2);
-  line.setAttribute("stroke", "white");
+  line.setAttribute("stroke", i > 9 ? "#ff3b3b" : "#ccc");
   line.setAttribute("stroke-width", "2");
 
-  tickGroup.appendChild(line);
+  ticks.appendChild(line);
 }
 
-// Time logic
-function getAESTTargetDate() {
+// Time
+function getTarget() {
   const now = new Date();
-  const year = now.getFullYear();
-  let target = new Date(Date.UTC(year, 6, 26, 14, 0, 0));
-
-  if (now > target) {
-    target = new Date(Date.UTC(year + 1, 6, 26, 14, 0, 0));
-  }
-
+  let target = new Date(Date.UTC(now.getFullYear(), 6, 26, 14));
+  if (now > target) target = new Date(Date.UTC(now.getFullYear()+1, 6, 26, 14));
   return target;
 }
 
-const target = getAESTTargetDate();
+const target = getTarget();
 const start = new Date();
 const total = target - start;
+
+// Startup sweep
+let startup = true;
+let sweep = -100;
 
 function update() {
   const now = new Date();
   const remaining = target - now;
 
   if (remaining <= 0) {
-    document.body.innerHTML = "<h1 style='color:#00ffcc'>🏁 LICENCE BACK pog</h1>";
+    document.body.innerHTML = "<h1 style='color:#00ffc3'>🏁 LICENCE BACK pog</h1>";
     return;
   }
 
-  const percent = 1 - (remaining / total);
+  let percent = 1 - (remaining / total);
 
-  // Needle movement
-  const angle = -90 + percent * 180;
-  document.getElementById("needle").style.transform =
-    `rotate(${angle}deg)`;
+  // Startup animation
+  if (startup) {
+    sweep += 8;
+    document.getElementById("needle").style.transform = `rotate(${sweep}deg)`;
+    if (sweep >= 100) startup = false;
+    return;
+  }
 
-  // Progress arc
-  const circumference = 408;
+  // Needle
+  const angle = -100 + percent * 200;
+  document.getElementById("needle").style.transform = `rotate(${angle}deg)`;
+
+  // Progress glow
   document.getElementById("progress").style.strokeDashoffset =
-    circumference * (1 - percent);
+    408 * (1 - percent);
 
-  // Fake gear animation
+  // Gear animation
   const gears = ["N","1","2","3","4","5","6"];
-  const gearIndex = Math.floor(percent * (gears.length - 1));
-  document.getElementById("gear").textContent = gears[gearIndex];
+  document.getElementById("gear").textContent =
+    gears[Math.floor(percent * (gears.length-1))];
 
-  // Time breakdown
-  const s = Math.floor(remaining / 1000) % 60;
-  const m = Math.floor(remaining / (1000*60)) % 60;
-  const h = Math.floor(remaining / (1000*60*60)) % 24;
-  const d = Math.floor(remaining / (1000*60*60*24));
+  // Time
+  const s = Math.floor(remaining/1000)%60;
+  const m = Math.floor(remaining/60000)%60;
+  const h = Math.floor(remaining/3600000)%24;
+  const d = Math.floor(remaining/86400000);
 
-  // FINAL TEXT 👇
   document.getElementById("time").innerHTML =
     `Licence back in<br>${d}d ${h}h ${m}m ${s}s<br>pog`;
 }
 
-setInterval(update, 1000);
-update();
+setInterval(update, 50);
 </script>
 
 </body>
