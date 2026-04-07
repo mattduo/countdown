@@ -2,10 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GSXR600 Dash</title>
-
+<title>GSXR600 Countdown Dash</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
-
 <style>
 body {
   margin: 0;
@@ -23,9 +21,7 @@ body {
   height: 280px;
   background: linear-gradient(145deg, #0a0a0a, #050505);
   border-radius: 25px;
-  box-shadow:
-    0 0 60px rgba(0,0,0,0.9),
-    inset 0 0 40px rgba(255,255,255,0.03);
+  box-shadow: 0 0 60px rgba(0,0,0,0.9), inset 0 0 40px rgba(255,255,255,0.03);
   position: relative;
   overflow: hidden;
 }
@@ -50,7 +46,7 @@ body {
   margin-top: 8px;
 }
 
-/* SVG */
+/* SVG Tachometer */
 svg {
   width: 100%;
   height: 170px;
@@ -89,43 +85,77 @@ svg {
   left: 15px;
   right: 15px;
   height: 70px;
-  background: linear-gradient(#dfe6e9, #b2bec3);
+  background: #111;
   border-radius: 10px;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+  padding: 8px 12px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.4);
+  color: #0ff;
+  font-family: 'Orbitron', monospace;
 }
 
-/* Gear */
-.gear {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #111;
-}
-
-/* Time */
+/* Countdown text */
 .time {
-  font-size: 0.9rem;
-  text-align: right;
-  color: #111;
-  line-height: 1.3rem;
+  font-size: 0.85rem;
+  line-height: 1.2rem;
+  text-align: left;
 }
+
+/* Fuel bar container */
+.fuel-container {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  background: #222;
+  border-radius: 3px;
+  margin-top: 4px;
+  box-shadow: inset 0 0 3px #000;
+}
+
+/* Fuel level */
+.fuel-level {
+  height: 100%;
+  width: 50%; /* starts at 50% */
+  background: linear-gradient(to right, #0ff, #00aaff);
+  border-radius: 3px;
+  transition: width 1s ease-out;
+}
+
+/* Warning lights */
+.warnings {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+.warning-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #333;
+  box-shadow: 0 0 2px #000;
+}
+
+.warning-light.on {
+  box-shadow: 0 0 8px currentColor;
+}
+.warning-light.oil { color: #ff0000; }
+.warning-light.fuel { color: #ffcc00; }
+.warning-light.neutral { color: #00ffcc; }
 </style>
 </head>
 
 <body>
-
 <div class="dash">
-  <div class="title">xd</div>
+  <div class="title">SUZUKI GSX-R600 STYLE</div>
 
   <svg viewBox="0 0 300 150">
-    <!-- Background -->
     <path d="M20 140 A130 130 0 0 1 280 140"
       stroke="#111" stroke-width="12" fill="none"/>
-
-    <!-- Glow arc -->
     <path id="progress"
       d="M20 140 A130 130 0 0 1 280 140"
       stroke="#00ffc3"
@@ -134,15 +164,11 @@ svg {
       stroke-dasharray="408"
       stroke-dashoffset="408"
       style="filter: drop-shadow(0 0 6px #00ffc3)"/>
-
-    <!-- Redline -->
     <path d="M210 50 A130 130 0 0 1 280 140"
       stroke="#ff1a1a"
       stroke-width="12"
       fill="none"
       style="filter: drop-shadow(0 0 6px red)"/>
-
-    <!-- Tick marks -->
     <g id="ticks"></g>
   </svg>
 
@@ -150,8 +176,15 @@ svg {
   <div class="hub"></div>
 
   <div class="lcd">
-    <div class="gear" id="gear">N</div>
-    <div class="time" id="time"></div>
+    <div class="time" id="time">Loading...</div>
+    <div class="fuel-container">
+      <div class="fuel-level" id="fuel"></div>
+    </div>
+    <div class="warnings">
+      <div class="warning-light oil" id="oil"></div>
+      <div class="warning-light fuel" id="fuelLight"></div>
+      <div class="warning-light neutral" id="neutral"></div>
+    </div>
   </div>
 </div>
 
@@ -161,12 +194,10 @@ const ticks = document.getElementById("ticks");
 for (let i = 0; i <= 12; i++) {
   const angle = -100 + (i * 200 / 12);
   const rad = angle * Math.PI / 180;
-
   const x1 = 150 + Math.cos(rad) * 105;
   const y1 = 140 + Math.sin(rad) * 105;
   const x2 = 150 + Math.cos(rad) * 125;
   const y2 = 140 + Math.sin(rad) * 125;
-
   const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
   line.setAttribute("x1", x1);
   line.setAttribute("y1", y1);
@@ -174,11 +205,10 @@ for (let i = 0; i <= 12; i++) {
   line.setAttribute("y2", y2);
   line.setAttribute("stroke", i > 9 ? "#ff3b3b" : "#ccc");
   line.setAttribute("stroke-width", "2");
-
   ticks.appendChild(line);
 }
 
-// Time
+// Countdown target
 function getTarget() {
   const now = new Date();
   let target = new Date(Date.UTC(now.getFullYear(), 6, 26, 14));
@@ -187,10 +217,9 @@ function getTarget() {
 }
 
 const target = getTarget();
-const start = new Date();
-const total = target - start;
+const total = target - new Date();
 
-// Startup sweep
+// Needle animation
 let startup = true;
 let sweep = -100;
 
@@ -203,9 +232,9 @@ function update() {
     return;
   }
 
-  let percent = 1 - (remaining / total);
+  let percent = 1 - remaining / total;
 
-  // Startup animation
+  // Startup needle sweep
   if (startup) {
     sweep += 8;
     document.getElementById("needle").style.transform = `rotate(${sweep}deg)`;
@@ -213,27 +242,24 @@ function update() {
     return;
   }
 
-  // Needle
   const angle = -100 + percent * 200;
   document.getElementById("needle").style.transform = `rotate(${angle}deg)`;
+  document.getElementById("progress").style.strokeDashoffset = 408 * (1 - percent);
 
-  // Progress glow
-  document.getElementById("progress").style.strokeDashoffset =
-    408 * (1 - percent);
-
-  // Gear animation
-  const gears = ["N","1","2","3","4","5","6"];
-  document.getElementById("gear").textContent =
-    gears[Math.floor(percent * (gears.length-1))];
-
-  // Time
+  // Time text
   const s = Math.floor(remaining/1000)%60;
   const m = Math.floor(remaining/60000)%60;
   const h = Math.floor(remaining/3600000)%24;
   const d = Math.floor(remaining/86400000);
+  document.getElementById("time").innerHTML = `Licence back in<br>${d}d ${h}h ${m}m ${s}s<br>pog`;
 
-  document.getElementById("time").innerHTML =
-    `Licence back in<br>${d}d ${h}h ${m}m ${s}s<br>pog`;
+  // Fuel bar (simulate decreasing over countdown)
+  document.getElementById("fuel").style.width = `${50 + 50*(1-percent)}%`;
+
+  // Warning lights: flash oil/fuel at 20% time left, neutral light always on for style
+  document.getElementById("oil").classList.toggle("on", percent > 0.8);
+  document.getElementById("fuelLight").classList.toggle("on", percent > 0.8);
+  document.getElementById("neutral").classList.add("on");
 }
 
 setInterval(update, 50);
