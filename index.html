@@ -54,6 +54,7 @@ svg {
   transform-origin: bottom center;
   transform: rotate(-90deg);
   box-shadow: 0 0 10px #ff2a2a;
+  transition: transform 0.3s ease-out;
 }
 
 /* Center hub */
@@ -93,8 +94,9 @@ svg {
 
 /* Time */
 .time {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   text-align: right;
+  line-height: 1.2rem;
 }
 </style>
 </head>
@@ -180,13 +182,13 @@ function update() {
   const remaining = target - now;
 
   if (remaining <= 0) {
-    document.body.innerHTML = "<h1 style='color:#00ffcc'>🏁 GO!</h1>";
+    document.body.innerHTML = "<h1 style='color:#00ffcc'>🏁 LICENCE BACK pog</h1>";
     return;
   }
 
   const percent = 1 - (remaining / total);
 
-  // Needle (like tach)
+  // Needle movement
   const angle = -90 + percent * 180;
   document.getElementById("needle").style.transform =
     `rotate(${angle}deg)`;
@@ -196,19 +198,20 @@ function update() {
   document.getElementById("progress").style.strokeDashoffset =
     circumference * (1 - percent);
 
-  // Fake gear (just for style)
+  // Fake gear animation
   const gears = ["N","1","2","3","4","5","6"];
   const gearIndex = Math.floor(percent * (gears.length - 1));
   document.getElementById("gear").textContent = gears[gearIndex];
 
-  // Time display
+  // Time breakdown
   const s = Math.floor(remaining / 1000) % 60;
   const m = Math.floor(remaining / (1000*60)) % 60;
   const h = Math.floor(remaining / (1000*60*60)) % 24;
   const d = Math.floor(remaining / (1000*60*60*24));
 
-  document.getElementById("time").textContent =
-    `${d}d ${h}h ${m}m ${s}s`;
+  // FINAL TEXT 👇
+  document.getElementById("time").innerHTML =
+    `Licence back in<br>${d}d ${h}h ${m}m ${s}s<br>pog`;
 }
 
 setInterval(update, 1000);
