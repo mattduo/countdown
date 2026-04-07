@@ -1,149 +1,214 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Motorcycle Countdown Gauge</title>
+<meta charset="UTF-8">
+<title>GSXR600 Countdown Dash</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
 
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      background: radial-gradient(circle, #111, #000);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: 'Orbitron', sans-serif;
-      color: #00ffcc;
-    }
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(circle, #000 40%, #050505);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: 'Orbitron', sans-serif;
+  color: white;
+}
 
-    .container {
-      text-align: center;
-    }
+/* Container */
+.dash {
+  width: 420px;
+  height: 260px;
+  background: #0a0a0a;
+  border-radius: 20px;
+  box-shadow: 0 0 40px #000, inset 0 0 30px #111;
+  padding: 20px;
+  position: relative;
+}
 
-    h1 {
-      color: #ff0033;
-      margin-bottom: 20px;
-      text-shadow: 0 0 10px #ff0033aa;
-    }
+/* Title */
+.title {
+  text-align: center;
+  color: #ccc;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
 
-    /* Gauge */
-    .gauge {
-      width: 300px;
-      height: 300px;
-      margin: 0 auto 30px;
-      position: relative;
-    }
+/* SVG tachometer */
+svg {
+  width: 100%;
+  height: 180px;
+}
 
-    svg {
-      transform: rotate(-90deg);
-    }
+/* Needle */
+.needle {
+  position: absolute;
+  width: 3px;
+  height: 100px;
+  background: #ff2a2a;
+  top: 65px;
+  left: 50%;
+  transform-origin: bottom center;
+  transform: rotate(-90deg);
+  box-shadow: 0 0 10px #ff2a2a;
+}
 
-    .needle {
-      position: absolute;
-      width: 4px;
-      height: 120px;
-      background: #ff0033;
-      top: 30px;
-      left: 50%;
-      transform-origin: bottom center;
-      transform: rotate(0deg);
-      box-shadow: 0 0 10px #ff0033;
-    }
+/* Center hub */
+.hub {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+  top: 150px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 
-    .center-dot {
-      position: absolute;
-      width: 12px;
-      height: 12px;
-      background: #fff;
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
+/* LCD Display */
+.lcd {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  right: 15px;
+  height: 60px;
+  background: #cfd8dc;
+  color: black;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  font-family: monospace;
+}
 
-    /* Countdown text */
-    .time {
-      font-size: 1.5rem;
-      margin-top: 10px;
-    }
-  </style>
+/* Gear */
+.gear {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+/* Time */
+.time {
+  font-size: 0.9rem;
+  text-align: right;
+}
+</style>
 </head>
+
 <body>
 
-<div class="container">
-  <h1>🏍️ Countdown to July 27</h1>
+<div class="dash">
+  <div class="title">SUZUKI GSX-R600 STYLE COUNTDOWN</div>
 
-  <div class="gauge">
-    <svg width="300" height="300">
-      <circle cx="150" cy="150" r="120" stroke="#222" stroke-width="15" fill="none"/>
-      <circle id="progress"
-              cx="150" cy="150" r="120"
-              stroke="#00ffcc"
-              stroke-width="15"
-              fill="none"
-              stroke-dasharray="754"
-              stroke-dashoffset="754"
-              stroke-linecap="round"/>
-    </svg>
+  <svg viewBox="0 0 300 150">
+    <!-- Background arc -->
+    <path d="M20 140 A130 130 0 0 1 280 140"
+      stroke="#222" stroke-width="10" fill="none"/>
 
-    <div class="needle" id="needle"></div>
-    <div class="center-dot"></div>
+    <!-- Tick marks -->
+    <g id="ticks"></g>
+
+    <!-- Redline -->
+    <path d="M200 40 A130 130 0 0 1 280 140"
+      stroke="#ff2a2a" stroke-width="10" fill="none"/>
+
+    <!-- Progress -->
+    <path id="progress"
+      d="M20 140 A130 130 0 0 1 280 140"
+      stroke="#00ffcc"
+      stroke-width="6"
+      fill="none"
+      stroke-dasharray="408"
+      stroke-dashoffset="408"/>
+  </svg>
+
+  <div class="needle" id="needle"></div>
+  <div class="hub"></div>
+
+  <div class="lcd">
+    <div class="gear" id="gear">N</div>
+    <div class="time" id="time"></div>
   </div>
-
-  <div class="time" id="text"></div>
 </div>
 
 <script>
+// Create tick marks
+const tickGroup = document.getElementById("ticks");
+for (let i = 0; i <= 10; i++) {
+  const angle = -90 + (i * 180 / 10);
+  const rad = angle * Math.PI / 180;
+
+  const x1 = 150 + Math.cos(rad) * 110;
+  const y1 = 140 + Math.sin(rad) * 110;
+  const x2 = 150 + Math.cos(rad) * 125;
+  const y2 = 140 + Math.sin(rad) * 125;
+
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.setAttribute("x1", x1);
+  line.setAttribute("y1", y1);
+  line.setAttribute("x2", x2);
+  line.setAttribute("y2", y2);
+  line.setAttribute("stroke", "white");
+  line.setAttribute("stroke-width", "2");
+
+  tickGroup.appendChild(line);
+}
+
+// Time logic
 function getAESTTargetDate() {
   const now = new Date();
   const year = now.getFullYear();
+  let target = new Date(Date.UTC(year, 6, 26, 14, 0, 0));
 
-  const targetUTC = Date.UTC(year, 6, 26, 14, 0, 0);
-  let targetDate = new Date(targetUTC);
-
-  if (now > targetDate) {
-    const nextUTC = Date.UTC(year + 1, 6, 26, 14, 0, 0);
-    targetDate = new Date(nextUTC);
+  if (now > target) {
+    target = new Date(Date.UTC(year + 1, 6, 26, 14, 0, 0));
   }
 
-  return targetDate;
+  return target;
 }
 
-const targetDate = getAESTTargetDate();
-const startDate = new Date();
-
-const totalDuration = targetDate - startDate;
+const target = getAESTTargetDate();
+const start = new Date();
+const total = target - start;
 
 function update() {
   const now = new Date();
-  const remaining = targetDate - now;
+  const remaining = target - now;
 
   if (remaining <= 0) {
-    document.body.innerHTML = "<h1>🏁 IT'S JULY 27!</h1>";
+    document.body.innerHTML = "<h1 style='color:#00ffcc'>🏁 GO!</h1>";
     return;
   }
 
-  const percent = 1 - (remaining / totalDuration);
+  const percent = 1 - (remaining / total);
 
-  // Circle progress
-  const circumference = 754;
-  const offset = circumference * (1 - percent);
-  document.getElementById("progress").style.strokeDashoffset = offset;
+  // Needle (like tach)
+  const angle = -90 + percent * 180;
+  document.getElementById("needle").style.transform =
+    `rotate(${angle}deg)`;
 
-  // Needle rotation (0 to 180 degrees)
-  const angle = percent * 180;
-  document.getElementById("needle").style.transform = `rotate(${angle}deg)`;
+  // Progress arc
+  const circumference = 408;
+  document.getElementById("progress").style.strokeDashoffset =
+    circumference * (1 - percent);
 
-  // Time breakdown
-  const seconds = Math.floor(remaining / 1000) % 60;
-  const minutes = Math.floor(remaining / (1000 * 60)) % 60;
-  const hours = Math.floor(remaining / (1000 * 60 * 60)) % 24;
-  const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+  // Fake gear (just for style)
+  const gears = ["N","1","2","3","4","5","6"];
+  const gearIndex = Math.floor(percent * (gears.length - 1));
+  document.getElementById("gear").textContent = gears[gearIndex];
 
-  document.getElementById("text").textContent =
-    `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  // Time display
+  const s = Math.floor(remaining / 1000) % 60;
+  const m = Math.floor(remaining / (1000*60)) % 60;
+  const h = Math.floor(remaining / (1000*60*60)) % 24;
+  const d = Math.floor(remaining / (1000*60*60*24));
+
+  document.getElementById("time").textContent =
+    `${d}d ${h}h ${m}m ${s}s`;
 }
 
 setInterval(update, 1000);
