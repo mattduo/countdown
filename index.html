@@ -2,97 +2,153 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Countdown to July 27 (AEST)</title>
+  <title>Motorcycle Countdown Gauge</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #0f172a;
-      color: #e2e8f0;
+      margin: 0;
+      height: 100vh;
+      background: radial-gradient(circle, #111, #000);
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      color: #00ffcc;
     }
+
     .container {
-      background: #1e293b;
-      padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      text-align: center;
     }
+
     h1 {
+      color: #ff0033;
       margin-bottom: 20px;
+      text-shadow: 0 0 10px #ff0033aa;
     }
+
+    /* Gauge */
+    .gauge {
+      width: 300px;
+      height: 300px;
+      margin: 0 auto 30px;
+      position: relative;
+    }
+
+    svg {
+      transform: rotate(-90deg);
+    }
+
+    .needle {
+      position: absolute;
+      width: 4px;
+      height: 120px;
+      background: #ff0033;
+      top: 30px;
+      left: 50%;
+      transform-origin: bottom center;
+      transform: rotate(0deg);
+      box-shadow: 0 0 10px #ff0033;
+    }
+
+    .center-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Countdown text */
     .time {
-      font-size: 2rem;
-      margin: 10px 0;
-    }
-    .label {
-      font-size: 0.9rem;
-      color: #94a3b8;
+      font-size: 1.5rem;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Countdown to July 27 (AEST)</h1>
-    <div class="time" id="days"></div>
-    <div class="label">Days</div>
-    <div class="time" id="hours"></div>
-    <div class="label">Hours</div>
-    <div class="time" id="minutes"></div>
-    <div class="label">Minutes</div>
-    <div class="time" id="seconds"></div>
-    <div class="label">Seconds</div>
+
+<div class="container">
+  <h1>🏍️ Countdown to July 27</h1>
+
+  <div class="gauge">
+    <svg width="300" height="300">
+      <circle cx="150" cy="150" r="120" stroke="#222" stroke-width="15" fill="none"/>
+      <circle id="progress"
+              cx="150" cy="150" r="120"
+              stroke="#00ffcc"
+              stroke-width="15"
+              fill="none"
+              stroke-dasharray="754"
+              stroke-dashoffset="754"
+              stroke-linecap="round"/>
+    </svg>
+
+    <div class="needle" id="needle"></div>
+    <div class="center-dot"></div>
   </div>
 
-  <script>
-    function getAESTTargetDate() {
-      const now = new Date();
+  <div class="time" id="text"></div>
+</div>
 
-      // Target: July 27, current year at 00:00 AEST (UTC+10)
-      const year = now.getFullYear();
+<script>
+function getAESTTargetDate() {
+  const now = new Date();
+  const year = now.getFullYear();
 
-      // Create target in UTC first (AEST = UTC+10)
-      const targetUTC = Date.UTC(year, 6, 26, 14, 0, 0); 
-      // July = month 6 (0-based), minus 10 hours → 14:00 previous day UTC
+  const targetUTC = Date.UTC(year, 6, 26, 14, 0, 0);
+  let targetDate = new Date(targetUTC);
 
-      let targetDate = new Date(targetUTC);
+  if (now > targetDate) {
+    const nextUTC = Date.UTC(year + 1, 6, 26, 14, 0, 0);
+    targetDate = new Date(nextUTC);
+  }
 
-      // If already passed, use next year
-      if (now > targetDate) {
-        const nextUTC = Date.UTC(year + 1, 6, 26, 14, 0, 0);
-        targetDate = new Date(nextUTC);
-      }
+  return targetDate;
+}
 
-      return targetDate;
-    }
+const targetDate = getAESTTargetDate();
+const startDate = new Date();
 
-    const targetDate = getAESTTargetDate();
+const totalDuration = targetDate - startDate;
 
-    function updateCountdown() {
-      const now = new Date();
-      const diff = targetDate - now;
+function update() {
+  const now = new Date();
+  const remaining = targetDate - now;
 
-      if (diff <= 0) {
-        document.body.innerHTML = "<h1>🎉 It's July 27 (AEST)!</h1>";
-        return;
-      }
+  if (remaining <= 0) {
+    document.body.innerHTML = "<h1>🏁 IT'S JULY 27!</h1>";
+    return;
+  }
 
-      const seconds = Math.floor(diff / 1000) % 60;
-      const minutes = Math.floor(diff / (1000 * 60)) % 60;
-      const hours = Math.floor(diff / (1000 * 60 * 60)) % 24;
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const percent = 1 - (remaining / totalDuration);
 
-      document.getElementById("days").textContent = days;
-      document.getElementById("hours").textContent = hours;
-      document.getElementById("minutes").textContent = minutes;
-      document.getElementById("seconds").textContent = seconds;
-    }
+  // Circle progress
+  const circumference = 754;
+  const offset = circumference * (1 - percent);
+  document.getElementById("progress").style.strokeDashoffset = offset;
 
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
-  </script>
+  // Needle rotation (0 to 180 degrees)
+  const angle = percent * 180;
+  document.getElementById("needle").style.transform = `rotate(${angle}deg)`;
+
+  // Time breakdown
+  const seconds = Math.floor(remaining / 1000) % 60;
+  const minutes = Math.floor(remaining / (1000 * 60)) % 60;
+  const hours = Math.floor(remaining / (1000 * 60 * 60)) % 24;
+  const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+
+  document.getElementById("text").textContent =
+    `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+
+setInterval(update, 1000);
+update();
+</script>
+
 </body>
 </html>
